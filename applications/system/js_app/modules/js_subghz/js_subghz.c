@@ -223,7 +223,7 @@ static void js_subghz_transmit_file(struct mjs* mjs) {
     // - "repeat" as variable and loop in this code applies to RAW files only
     //   parsed files handle repeat in protocol layer instead
     // We keep 0 as default, or literal value if specified by user
-    // If user did not specify, -1 is detected below, and we use:
+    // If user did not specify, 0 is detected below, and we use:
     // - 1 repeat for RAW
     // - 10 repeats for parsed, which is passed to protocol, and we loop once here
     uint32_t repeat = 0;
@@ -279,6 +279,11 @@ static void js_subghz_transmit_file(struct mjs* mjs) {
         }
         if(!flipper_format_read_uint32(fff_file, "Frequency", &frequency, 1)) {
             mjs_prepend_errorf(mjs, MJS_INTERNAL_ERROR, "Missing Frequency");
+            break;
+        }
+
+        if(!subghz_devices_is_frequency_valid(js_subghz->radio_device, frequency)) {
+            mjs_prepend_errorf(mjs, MJS_INTERNAL_ERROR, "Unsupported frequency");
             break;
         }
 
@@ -479,7 +484,8 @@ static void js_subghz_end(struct mjs* mjs) {
     mjs_return(mjs, MJS_UNDEFINED);
 }
 
-static void* js_subghz_create(struct mjs* mjs, mjs_val_t* object) {
+static void* js_subghz_create(struct mjs* mjs, mjs_val_t* object, JsModules* modules) {
+    UNUSED(modules);
     JsSubghzInst* js_subghz = malloc(sizeof(JsSubghzInst));
     mjs_val_t subghz_obj = mjs_mk_object(mjs);
 
@@ -519,6 +525,7 @@ static const JsModuleDescriptor js_subghz_desc = {
     "subghz",
     js_subghz_create,
     js_subghz_destroy,
+    NULL,
 };
 
 static const FlipperAppPluginDescriptor plugin_descriptor = {

@@ -810,7 +810,8 @@ static void widget_draw_callback(Canvas* canvas, void* model) {
     }
 }
 
-static void* js_widget_create(struct mjs* mjs, mjs_val_t* object) {
+static void* js_widget_create(struct mjs* mjs, mjs_val_t* object, JsModules* modules) {
+    UNUSED(modules);
     JsWidgetInst* widget = malloc(sizeof(JsWidgetInst));
 
     mjs_val_t widget_obj = mjs_mk_object(mjs);
@@ -865,7 +866,6 @@ static void* js_widget_create(struct mjs* mjs, mjs_val_t* object) {
     widget->view_holder = view_holder_alloc();
     view_holder_attach_to_gui(widget->view_holder, gui);
     view_holder_set_back_callback(widget->view_holder, widget_exit, widget);
-    view_holder_set_view(widget->view_holder, widget->view);
 
     *object = widget_obj;
     return widget;
@@ -908,6 +908,7 @@ static const JsModuleDescriptor js_widget_desc = {
     "widget",
     js_widget_create,
     js_widget_destroy,
+    NULL,
 };
 
 static const FlipperAppPluginDescriptor widget_plugin_descriptor = {
